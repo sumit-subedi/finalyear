@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Project</title>
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+	<!-- Compiled and minified CSS -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
+
+    <!-- Compiled and minified JavaScript -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+            
+    <style>
+        .loader {
+          border: 16px solid #f3f3f3;
+          border-radius: 50%;
+          border-top: 16px solid #3498db;
+          width: 120px;
+          margin:30%;
+          height: 120px;
+          margin-top:70%;
+          animation: spin 2s linear infinite;
+        }
+        .transparen {
+            height: 100%;
+            width: 100%;
+            position:fixed;
+            display: none;
+            background-color: rgba(12,12,12,0.7);
+        }
+        
+        @keyframes spin {
+          0% { transform: rotate(0deg); }
+          100% { transform: rotate(360deg); }
+        }
+        </style>
+</head>
+<body>
+    <div id="cover" class="transparen"> <div class="loader"></div></div>
+    
+   
+    
+	<div class="card-panel teal lighten-2 white-text" style="font-size:20px;"> Welcome to Character Recognition Program.</div>
+	
+	<div class="card-panel blue lighten-2" style="font-size:20px;"> Scan your writing from below.</div>
+	<div class="container">
+    <form 
+    enctype="multipart/form-data"
+    id="myform" method="POST"
+    novalidate="">
+      {% csrf_token %}
+      
+   	<div class="file-field input-field">
+      <div class="btn">
+        <span>File</span>
+     
+        <input type="file" name="photo" accept="image/*" required="" id="id_photo">
+      </div>
+      <div class="file-path-wrapper">
+      
+        <input class="file-path validate" type="text">
+      </div>
+    </div>
+      <input type="submit" class="waves-effect waves-light btn" />
+   </form>
+   <br><br><br><br><br>
+   <img id="image" style="width: 100%; height: 30%; max-height: 300px;">
+   <div id="resultpart" style="font-size:22px;font-weight:700;">
+   <p id="result"> <span id="recognized"></span> <br>
+       <span id="probability"></span>
+      </div>
+<br>
+</p>
+</div>
+</body>
+ 
+<script>
+ $('#myform').submit(function(e){
+        e.preventDefault();
+        $('#cover').css('display', 'block');
+        $form = $(this)
+        var formData = new FormData(this);
+        $.ajax({
+            url: '',
+            type: 'POST',
+            data: formData,
+            success: function (response) {
+                $('#cover').css('display', 'none');
+                console.log(response)
+                if(response.error){
+                    $.each(response.errors, function(name, error){
+                        error = '<small class="text-muted error">' + error + '</small>'
+                        $form.find('[name=' + name + ']').after(error);
+                    })
+                }
+                else{
+                    document.getElementById('recognized').innerHTML = "Recognized : " + response.recognized;
+              	    
+                    document.getElementById('probability').innerHTML = "Probability : " +response.probability;
+                    document.getElementById('resultpart').classList.add("card-panel");
+document.getElementById('resultpart').classList.add("blue");
+
+                    var rawResponse = response.image; // truncated for example                 
+                    var outputImg = document.getElementById('image');
+                    outputImg.src = "data:image/png;base64,"+ rawResponse;
+
+                }
+            },
+            cache: false,
+            contentType: false,
+            processData: false
+        });
+    });
+</script>
+
+</html>
